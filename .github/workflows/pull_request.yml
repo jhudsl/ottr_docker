@@ -36,6 +36,12 @@ jobs:
           files: bioconductor/*
 
       - name: Get specific changed files
+        id: jekyll
+        uses: tj-actions/changed-files@v14.5
+        with:
+          files: ottr_jekyll/*
+
+      - name: Get specific changed files
         id: python
         uses: tj-actions/changed-files@v14.5
         with:
@@ -51,6 +57,7 @@ jobs:
           echo ${{steps.base_ottr.outputs.any_changed}}
           echo ${{steps.ottrpal.outputs.any_changed}}
           echo ${{steps.bioconductor.outputs.any_changed}}
+          echo ${{steps.jekyll.outputs.any_changed}}
           echo ${{steps.python.outputs.any_changed}}
           echo ${{steps.quarto.outputs.any_changed}}
 
@@ -58,6 +65,7 @@ jobs:
       base_ottr_changed: ${{steps.base_ottr.outputs.any_changed}}
       ottrpal_changed: ${{steps.ottrpal.outputs.any_changed}}
       bioconductor_changed: ${{steps.bioconductor.outputs.any_changed}}
+      jekyll_changed: ${{steps.jekyll.outputs.any_changed}}
       python_changed: ${{steps.python.outputs.any_changed}}
       quarto_changed: ${{steps.quarto.outputs.any_changed}}
 
@@ -91,6 +99,17 @@ jobs:
     with:
       directory: bioconductor
       tag: jhudsl/ottr_bioconductor
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
+
+  build-jekyll:
+    name: Build jekyll image
+    needs: dockerfiles-changed
+    if: ${{needs.dockerfiles-changed.outputs.jekyll_changed == 'true'}}
+    uses: ./.github/workflows/docker-test.yml
+    with:
+      directory: ottr_jekyll
+      tag: jhudsl/ottr_jekyll
     secrets:
       GH_PAT: ${{ secrets.GH_PAT }}
 
